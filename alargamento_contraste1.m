@@ -1,9 +1,10 @@
-color_img = imread('lena.jpg');
-gray_img = rgb2gray(color_img);
+function new_img = alargamento_contrate1( image_path, m )
+    gray_img = load_img(image_path);
+    new_img = (gray_img < m) * 255;
+    imshow( [gray_img, new_img] );
+end
 
-m = 100;
-A = gray_img < m;
-A = A .* 255;
-
-new_img = A ;
-imshow( [gray_img, new_img] );
+function gray_img = load_img(image_path)
+    original_img = imread(image_path);
+    gray_img = rgb2gray(original_img);
+end
