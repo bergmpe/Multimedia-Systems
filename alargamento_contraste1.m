@@ -1,4 +1,4 @@
-function new_img = alargamento_contrate1( image_path, m )
+function new_img = alargamento_contraste1( image_path, m )
     gray_img = load_img(image_path);
     new_img = (gray_img < m) * 255;
     imshow( [gray_img, new_img] );
