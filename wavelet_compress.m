@@ -1,4 +1,4 @@
-function [CA RE] = wavelet_compress(image_name, compress)
+function [compress_rate error] = wavelet_compress(image_name, compress, N)
     CHS = {};
     CVS = {};
     CDS = {};
@@ -7,9 +7,8 @@ function [CA RE] = wavelet_compress(image_name, compress)
     [r, c] = size( CA );
     counter = 1;
     
-    while c > 32 && r > 32
+    while c > 8 && r > 8 && counter <= N
         [CA, CH, CV, CD] = dwt2(CA, 'haar');
-        %current_img = CA./2;
         
         CA = round(CA./2);
         CH = round(CH./2);
@@ -24,22 +23,25 @@ function [CA RE] = wavelet_compress(image_name, compress)
         CVS(:,:, counter) = {CV};
         CDS(:,:, counter) = {CD};
         
-        %symbols_probabilites = tabulate( round(CH(:)./ 2) );
-        %dict = huffmandict( symbols_probabilites(:,1), (symbols_probabilites(:, 3)/ 100) );
         counter = counter + 1;
         [r, c] = size( CA );
     end
     counter = counter - 1;
-    
-    
+    %rebuild the image
     for i = counter:-1:1
-        disp(i)
         CA = idwt2( CA.*2, cell2mat(CHS(:,:, i)).*2, cell2mat(CVS(:,:, i)).*2, cell2mat(CDS(:,:, i)).*2,'haar');
-        RE = cell2mat(CDS(:,:, i)).*2;
-        disp(RE);
     end
     imshow([original_image, uint8(CA)]);
-    %imshow(uint8(CA));
+    
+    %symbols_probabilites = tabulate( round(CH(:)./ 2) );
+    %dict = huffmandict( symbols_probabilites(:,1), (symbols_probabilites(:, 3)/ 100) );
+    SYM = unique(CA);
+    PROB = hist(CA(:), SYM)./length(CA(:)) ;
+    dict = huffmandict( SYM, PROB );
+    comp = huffmanenco(CA(:), dict);
+    compress_rate = ( numel(de2bi((comp))) / numel(de2bi(original_image)));
+    %compress_rate = numel(de2bi(cell2mat(dict)));
+    error = immse(original_image, uint8(CA));
     
 end
 
